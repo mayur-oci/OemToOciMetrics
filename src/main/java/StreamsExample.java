@@ -54,7 +54,7 @@ public class StreamsExample {
 
     public static void main(String[] args) throws Exception {
         final String configurationFilePath = "~/.oci/config";
-        final String profile = "DEFAULT";
+        final String profile = "MAYUR_ADMIN_SJC";
 
         final AuthenticationDetailsProvider provider =
                 new ConfigFileAuthenticationDetailsProvider(configurationFilePath, profile);
@@ -67,14 +67,14 @@ public class StreamsExample {
                     "This example expects an ocid for the compartment in which streams should be created.");
         }
 
-        final String compartmentId = args[0];
-        final String exampleStreamName = "sdk-example-stream";
+        final String compartmentId = "ocid1.compartment.oc1..aaaaaaaa2z4wup7a4enznwxi3mkk55cperdk3fcotagepjnan5utdb3tvakq";
+        final String streamName = "demo-stream-TEST-sdk";
         final int partitions = 1;
 
         // We want to be good samaritan, so we'll reuse a stream if its already created.
         // This will utilize ListStreams() to determine if a stream exists and return it, or create a new one.
         Stream stream =
-                getOrCreateStream(adminClient, compartmentId, exampleStreamName, partitions);
+                getOrCreateStream(adminClient, compartmentId, streamName, partitions);
 
         // Streams are assigned a specific endpoint url based on where they are provisioned.
         // Create a stream client using the provided message endpoint.
@@ -106,12 +106,12 @@ public class StreamsExample {
         simpleMessageLoop(streamClient, streamId, groupCursor);
 
         // Cleanup; remember to delete streams which are not in use.
-        deleteStream(adminClient, streamId);
+//         deleteStream(adminClient, streamId);
 
         // Stream deletion is an asynchronous operation, give it some time to complete.
 
-        GetStreamRequest streamRequest = GetStreamRequest.builder().streamId(streamId).build();
-        adminClient.getWaiters().forStream(streamRequest, LifecycleState.Deleted).execute();
+//        GetStreamRequest streamRequest = GetStreamRequest.builder().streamId(streamId).build();
+//        adminClient.getWaiters().forStream(streamRequest, LifecycleState.Deleted).execute();
     }
 
     private static void deleteStream(StreamAdminClient adminClient, String streamId) {
@@ -213,12 +213,14 @@ public class StreamsExample {
             String compartmentId,
             String streamName,
             int partitions) {
+        String streamPoolId = "ocid1.streampool.oc1.us-sanjose-1.amaaaaaauwpiejqawbcccfmvdkctu5vbmhwlogzsjss4haz7nuepc4ihk3ea";
         System.out.println(
                 String.format("Creating stream %s with %s partitions", streamName, partitions));
 
         CreateStreamDetails streamDetails =
                 CreateStreamDetails.builder()
-                        .compartmentId(compartmentId)
+//                        .compartmentId(compartmentId)
+                        .streamPoolId(streamPoolId)
                         .name(streamName)
                         .partitions(partitions)
                         .build();
@@ -233,7 +235,7 @@ public class StreamsExample {
     private static void publishExampleMessages(StreamClient streamClient, String streamId) {
         // build up a putRequest and publish some messages to the stream
         List<PutMessagesDetailsEntry> messages = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 15; i++) {
             messages.add(
                     PutMessagesDetailsEntry.builder()
                             .key(String.format("messageKey-%s", i).getBytes(UTF_8))
