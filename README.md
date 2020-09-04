@@ -9,3 +9,6 @@ The conversion/transformation logic of Oem Metric to OCI Metrics for these messa
 
 All the config values for consumer and monitoring service are in this file
 ConfigHolder.java. This class is simply holding all these config values.  
+
+For more information on Oracle Cloud Service SDK for Oracle Streaming Service and Monitoring Service, please take a look at 
+https://github.com/oracle/oci-java-sdk/tree/master/bmc-streaming and https://github.com/oracle/oci-java-sdk/tree/master/bmc-monitoring respectively.
