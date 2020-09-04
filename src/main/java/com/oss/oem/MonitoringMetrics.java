@@ -8,13 +8,14 @@ import com.oracle.bmc.ConfigFileReader.ConfigFile;
 import com.oracle.bmc.auth.AuthenticationDetailsProvider;
 import com.oracle.bmc.auth.ConfigFileAuthenticationDetailsProvider;
 import com.oracle.bmc.monitoring.MonitoringClient;
-import com.oracle.bmc.monitoring.model.Datapoint;
 import com.oracle.bmc.monitoring.model.MetricDataDetails;
 import com.oracle.bmc.monitoring.model.PostMetricDataDetails;
 import com.oracle.bmc.monitoring.requests.PostMetricDataRequest;
 import com.oracle.bmc.monitoring.responses.PostMetricDataResponse;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MonitoringMetrics {
 

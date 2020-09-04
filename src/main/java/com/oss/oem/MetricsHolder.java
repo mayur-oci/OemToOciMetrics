@@ -1,7 +1,6 @@
 package com.oss.oem;
 
 import com.oracle.bmc.monitoring.model.Datapoint;
-import com.oss.oem.pojo.MetricMessage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
