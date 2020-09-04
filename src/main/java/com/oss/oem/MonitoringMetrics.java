@@ -41,14 +41,17 @@ public class MonitoringMetrics {
                                         .build())
                         .build();
 
-        System.out.printf("Request constructed:\n%s\n\n", request.getPostMetricDataDetails());
+        try {
+            System.out.printf("Request constructed:\n%s\n\n", request.getPostMetricDataDetails());
+            System.out.println("Trying to post metrics...");
+            final PostMetricDataResponse response = monitoringClient.postMetricData(request);
+            System.out.printf(
+                    "\n\nReceived response [opc-request-id: %s]\n", response.getOpcRequestId());
+            System.out.printf("%s\n\n", response.getPostMetricDataResponseDetails());
+        }catch(Exception exception){
+            System.out.println("Error: Could not post these metrics ... Problematic Metrics are " +  bulkMetric.toString() + "\nDue to exception " + exception);
+        }
 
-        System.out.println("Sending...");
-        final PostMetricDataResponse response = monitoringClient.postMetricData(request);
-
-        System.out.printf(
-                "\n\nReceived response [opc-request-id: %s]\n", response.getOpcRequestId());
-        System.out.printf("%s\n\n", response.getPostMetricDataResponseDetails());
     }
 
     private static Map<String, String> makeMap(String... data) {

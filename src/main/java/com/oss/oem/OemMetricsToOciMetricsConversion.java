@@ -16,12 +16,8 @@ public class OemMetricsToOciMetricsConversion {
 
     void addSingleMetric(Payload payload) {
 
-        // COLUMN_LABEL -> metadata unit = group
-        // METRIC_LABEL ->  metric name = group
-        // metric name and column -> metadata/dimention = group
-        // TARGET_NAME and TARGET_TYPE -> dimension = group
         Date timestamp = new Date(payload.getCOLLECTIONTIMESTAMP());
-        Long twoHrsBackTimeStamp = System.currentTimeMillis() - 2*60*60*1000;
+        Long twoHrsBackTimeStamp = System.currentTimeMillis() - 1*60*60*1000;
         if(timestamp.getTime() < twoHrsBackTimeStamp) {
           //skipping older than 2hrs messages since OCI Monitoring endpoint does not accept anyways
           return;
@@ -42,25 +38,23 @@ public class OemMetricsToOciMetricsConversion {
         if (metricKeyToMetricHolderMap.containsKey(metricKey) == false) {
             metricsHolder = new MetricsHolder();
 
-            metricsHolder.metricName = payload.getMETRICLABEL().toLowerCase().trim().replace(" ","_");
+            metricsHolder.metricKey = metricKey;
 
-            metricsHolder.metadata.put("unit", payload.getCOLUMNLABEL().toLowerCase().trim().replace(" ","_"));
+            metricsHolder.metricName = ociMetricsRegexCompatible(payload.getMETRICLABEL())
+                     + "-"
+                     + ociMetricsRegexCompatible(payload.getMETRICCOLUMN());
 
-            metricsHolder.dimensions.put("TARGET_TYPE".toLowerCase(), payload.getTARGETTYPE().toLowerCase().trim().replace(" ","_"));
-            metricsHolder.dimensions.put("TARGET_NAME".toLowerCase(), payload.getTARGETNAME().toLowerCase().trim().replace(" ","_"));
-            metricsHolder.dimensions.put("METRIC_COLUMN".toLowerCase(), payload.getMETRICCOLUMN().toLowerCase().trim().replace(" ","_"));
-            metricsHolder.dimensions.put("METRIC_NAME".toLowerCase(), payload.getMETRICNAME().toLowerCase().trim().replace(" ","_"));
+            metricsHolder.metadata.put("unit",
+                    ociMetricsRegexCompatible(payload.getCOLUMNLABEL()));
+
+            metricsHolder.dimensions.put( ociMetricsRegexCompatible(payload.getTARGETTYPE()),
+                    ociMetricsRegexCompatible(payload.getTARGETNAME()));
 
             metricKeyToMetricHolderMap.put(metricKey, metricsHolder);
         } else {
             metricsHolder = metricKeyToMetricHolderMap.get(metricKey);
         }
 
-//        Date timestamp = new Date(payload.getCOLLECTIONTIMESTAMP());
-//        if(timestamp.getTime() < twoHrsBackTimeStamp){
-//          timestamp = new Date(highestTimeStampSeenSoFar);
-//          highestTimeStampSeenSoFar = highestTimeStampSeenSoFar + 60*1000l;
-//        }
         Datapoint datapoint = Datapoint.builder()
                 .timestamp(timestamp)
                 .count(1)
@@ -68,6 +62,20 @@ public class OemMetricsToOciMetricsConversion {
                 .build();
         metricsHolder.datapointList.add(datapoint);
 
+    }
+
+    static String ociMetricsRegexCompatible(String input){
+        String s1=  input.toLowerCase().trim().replaceAll("[^A-Za-z0-9]","_");
+
+        while(s1.endsWith("_")){
+            s1 = s1.substring(0,s1.length()-1);
+        }
+
+        while(s1.startsWith("_")){
+            s1 = s1.substring(1,s1.length());
+        }
+
+        return s1;
     }
 
 

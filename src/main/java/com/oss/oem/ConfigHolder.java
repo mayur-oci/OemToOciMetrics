@@ -18,7 +18,7 @@ public class ConfigHolder {
     static public String streamConsumerGroupName = "oem-oci";
     static public String streamConsumerInstanceName = "oem-oci-instance-100";
     static public CreateCursorDetails.Type streamConsumerCursorType = CreateCursorDetails.Type.AtOffset; //CreateCursorDetails.Type.TrimHorizon;
-    static public Long startOffsetForStreamRead = 772310l;// min value is zero/0
+    static public Long startOffsetForStreamRead = 882310l;// min value is zero/0
     static public Integer streamReadChunkSize = 1000;
     static public Boolean runStreamConsumerTillEternity = true;
 
@@ -29,7 +29,7 @@ public class ConfigHolder {
 
 
     static public String namespace = "oem_to_oci_testrun_0";
-    static public String resourceGroup = "oem_installation_testrun_1";
+    static public String resourceGroup = "oem_installation_testrun_7";
 
 
 }

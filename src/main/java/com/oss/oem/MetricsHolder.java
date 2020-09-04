@@ -23,12 +23,15 @@ public class MetricsHolder {
 
     public List<Datapoint> datapointList = new ArrayList<>();
 
-
-    void addSingleMetric(MetricMessage metricMessage) {
-
-
+    @Override
+    public String toString() {
+        return "MetricsHolder{" +
+                "metricKey='" + metricKey + '\'' +
+                ", metricName='" + metricName + '\'' +
+                ", dimensions=" + dimensions +
+                ", metadata=" + metadata +
+                ", datapointList=" + datapointList +
+                '}';
     }
-
-
 }
 
