@@ -8,6 +8,7 @@ public class ConfigHolder {
 
     static public String ociConfigFilePath = "~/.oci/config";
 
+
     static public String streamProfileName = "MAYUR_ADMIN_SJC";
     static public String streamCompartmentId = "ocid1.compartment.oc1..aaaaaaaa2z4wup7a4enznwxi3mkk55cperdk3fcotagepjnan5utdb3tvakq";
     static public String streamName = "multistream01";
@@ -17,7 +18,7 @@ public class ConfigHolder {
     static public String streamConsumerGroupName = "oem-oci";
     static public String streamConsumerInstanceName = "oem-oci-instance-100";
     static public CreateCursorDetails.Type streamConsumerCursorType = CreateCursorDetails.Type.AtOffset; //CreateCursorDetails.Type.TrimHorizon;
-    static public Long offset = 772310l;//871309
+    static public Long startOffsetForStreamRead = 772310l;// min value is zero/0
     static public Integer streamReadChunkSize = 1000;
     static public Boolean runStreamConsumerTillEternity = true;
 

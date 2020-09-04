@@ -46,7 +46,7 @@ public class OemMetricStreamReader {
         System.out.println(String.format("Creating a cursor for partition %s.", partition));
 
         CreateCursorDetails cursorDetails =
-                CreateCursorDetails.builder().partition(partition).offset(ConfigHolder.offset).type(ConfigHolder.streamConsumerCursorType).build();
+                CreateCursorDetails.builder().partition(partition).offset(ConfigHolder.startOffsetForStreamRead).type(ConfigHolder.streamConsumerCursorType).build();
 
         CreateCursorRequest createCursorRequest =
                 CreateCursorRequest.builder()
