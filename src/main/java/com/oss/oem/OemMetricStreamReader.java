@@ -1,69 +1,44 @@
-/**
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates.  All rights reserved.
- * This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
- */
-import static java.nio.charset.StandardCharsets.UTF_8;
+package com.oss.oem;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.oracle.bmc.auth.AbstractAuthenticationDetailsProvider;
 import com.oracle.bmc.auth.AuthenticationDetailsProvider;
 import com.oracle.bmc.auth.ConfigFileAuthenticationDetailsProvider;
 import com.oracle.bmc.streaming.StreamAdminClient;
 import com.oracle.bmc.streaming.StreamClient;
 import com.oracle.bmc.streaming.model.CreateCursorDetails;
-import com.oracle.bmc.streaming.model.CreateCursorDetails.Type;
-import com.oracle.bmc.streaming.model.CreateStreamDetails;
 import com.oracle.bmc.streaming.model.Message;
-import com.oracle.bmc.streaming.model.PutMessagesDetails;
-import com.oracle.bmc.streaming.model.PutMessagesDetailsEntry;
-import com.oracle.bmc.streaming.model.PutMessagesResultEntry;
 import com.oracle.bmc.streaming.model.Stream;
 import com.oracle.bmc.streaming.model.Stream.LifecycleState;
 import com.oracle.bmc.streaming.requests.CreateCursorRequest;
-import com.oracle.bmc.streaming.requests.CreateStreamRequest;
 import com.oracle.bmc.streaming.requests.GetMessagesRequest;
 import com.oracle.bmc.streaming.requests.GetStreamRequest;
 import com.oracle.bmc.streaming.requests.ListStreamsRequest;
-import com.oracle.bmc.streaming.requests.PutMessagesRequest;
 import com.oracle.bmc.streaming.responses.CreateCursorResponse;
-import com.oracle.bmc.streaming.responses.CreateStreamResponse;
 import com.oracle.bmc.streaming.responses.GetMessagesResponse;
 import com.oracle.bmc.streaming.responses.GetStreamResponse;
 import com.oracle.bmc.streaming.responses.ListStreamsResponse;
-import com.oracle.bmc.streaming.responses.PutMessagesResponse;
-import java.util.ArrayList;
-import java.util.List;
+import com.oss.oem.pojo.MetricMessage;
+
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang3.StringUtils;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 
-public class OemStream {
+public class OemMetricStreamReader {
 
     public static void main(String[] args) throws Exception {
 
         final AuthenticationDetailsProvider provider =
                 new ConfigFileAuthenticationDetailsProvider(ConfigHolder.ociConfigFilePath, ConfigHolder.streamProfileName);
-
-        // Create an admin-client for the phoenix region.
-        final StreamAdminClient adminClient = StreamAdminClient.builder().build(provider);
-
-        // We want to be good samaritan, so we'll reuse a stream if its already created.
-        // This will utilize ListStreams() to determine if a stream exists and return it, or create a new one.
-        Stream stream = getStreamOfOemMetrics(adminClient);
-
-        // Streams are assigned a specific endpoint url based on where they are provisioned.
-        // Create a stream client using the provided message endpoint.
-        StreamClient streamClient = StreamClient.builder().stream(stream).build(provider);
-
-        String streamId = stream.getId();
-
-        // Use a cursor for getting messages; each getMessages call will return a next-cursor for iteration.
-        // There are a couple kinds of cursors.
-
-        // A cursor can be created at a given partition/offset.
-        // This gives explicit offset management control to the consumer.
-        System.out.println("Starting a simple message loop with a partition cursor");
-        String partitionCursor = getCursorByPartition(streamClient, streamId, "0");
-        simpleMessageLoop(streamClient, streamId, partitionCursor);
+        try {
+            readOemMessagesFromOss(provider);
+        }catch(Exception e){
+            throw e;
+        }
     }
 
     private static String getCursorByPartition(
@@ -71,7 +46,7 @@ public class OemStream {
         System.out.println(String.format("Creating a cursor for partition %s.", partition));
 
         CreateCursorDetails cursorDetails =
-                CreateCursorDetails.builder().partition(partition).type(Type.TrimHorizon).build();
+                CreateCursorDetails.builder().partition(partition).offset(ConfigHolder.offset).type(ConfigHolder.streamConsumerCursorType).build();
 
         CreateCursorRequest createCursorRequest =
                 CreateCursorRequest.builder()
@@ -118,36 +93,51 @@ public class OemStream {
     }
 
 
-    private static void simpleMessageLoop(
-            StreamClient streamClient, String streamId, String initialCursor) {
-        String cursor = initialCursor;
-        for (int i = 0; i < 10; i++) {
+    private static void readOemMessagesFromOss(AbstractAuthenticationDetailsProvider provider) throws Exception {
+        final StreamAdminClient adminClient = StreamAdminClient.builder().build(provider);
+        Stream stream = getStreamOfOemMetrics(adminClient);
+        StreamClient streamClient = StreamClient.builder().stream(stream).build(provider);
+        String streamId = stream.getId();
+        String partitionCursor = getCursorByPartition(streamClient, streamId, "0");
 
+        int messageOffset = 0;
+        Gson gson = new GsonBuilder().create();
+        do {
             GetMessagesRequest getRequest =
                     GetMessagesRequest.builder()
                             .streamId(streamId)
-                            .cursor(cursor)
-                            .limit(10)
+                            .cursor(partitionCursor)
+                            .limit(ConfigHolder.streamReadChunkSize)
                             .build();
 
             GetMessagesResponse getResponse = streamClient.getMessages(getRequest);
 
             // process the messages
             System.out.println(String.format("Read %s messages.", getResponse.getItems().size()));
+            OemMetricsToOciMetricsConversion ociMetricsMap = new OemMetricsToOciMetricsConversion();
             for (Message message : getResponse.getItems()) {
+                String streamMessage = new String(message.getValue(), UTF_8);
+                MetricMessage metricMessage = gson.fromJson(streamMessage, MetricMessage.class);
                 System.out.println(
-                        String.format(
-                                "%s: %s",
-                                new String(message.getKey(), UTF_8),
-                                new String(message.getValue(), UTF_8)));
+                        String.format(metricMessage + "Message offset %s number %d: Message value %s", message.getOffset(), messageOffset++,
+                                streamMessage));
+                ociMetricsMap.addSingleMetric(metricMessage.getPayload());
             }
 
             // getMessages is a throttled method; clients should retrieve sufficiently large message
             // batches, as to avoid too many http requests.
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
+            for(Map.Entry bulkMetric:ociMetricsMap.metricKeyToMetricHolderMap.entrySet()){
+                   MetricsHolder metricsHolder = (MetricsHolder) bulkMetric.getValue();
+                if(metricsHolder.datapointList.size() > 0) {
+                    System.out.println(metricsHolder);
+                    MonitoringMetrics.postMetricsToOci(metricsHolder);
+               }
+            }
+
             // use the next-cursor for iteration
-            cursor = getResponse.getOpcNextCursor();
-        }
+            partitionCursor = getResponse.getOpcNextCursor();
+        } while (ConfigHolder.runStreamConsumerTillEternity);
     }
 }
