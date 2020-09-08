@@ -29,7 +29,7 @@ public class ConfigHolder {
 
 
     static public String namespace = "oem_to_oci_testrun_0";
-    static public String resourceGroup = "oem_installation_testrun_7";
+    static public String resourceGroup = "oem_installation_testrun_8";
 
 
 }
