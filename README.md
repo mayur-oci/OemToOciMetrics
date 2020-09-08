@@ -12,3 +12,14 @@ ConfigHolder.java. This class is simply holding all these config values.
 
 For more information on Oracle Cloud Service SDK for Oracle Streaming Service and Monitoring Service, please take a look at 
 https://github.com/oracle/oci-java-sdk/tree/master/bmc-streaming and https://github.com/oracle/oci-java-sdk/tree/master/bmc-monitoring respectively.
+
+
+Deployment Instructions: This is simple maven based Java 8 project. For building it you need Java 8 and mvn 3.6+ in the path. 
+From root pom directory, just do 
+
+
+mvn clean install for compilation. 
+
+After compilation you can use standard Java command as follows for launching it.
+
+mvn exec:java OemMetricStreamReader
