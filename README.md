@@ -17,7 +17,7 @@ https://github.com/oracle/oci-java-sdk/tree/master/bmc-streaming and https://git
 
 Deployment Instructions: 
 
-This is simple maven based Java 8 project. For building it you need Java 8 and mvn 3.6+ in the environment path variable. 
+This is simple single module maven based Java 8 project. For building it you need Java 8 and mvn 3.6+ in the environment path variable. 
 After downloding this repo, cd into root pom directory(https://github.com/mayur-oci/OemToOciMetrics/blob/master/pom.xml),  then
 for compilation just do 
 ```
