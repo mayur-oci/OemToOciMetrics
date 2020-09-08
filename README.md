@@ -8,8 +8,8 @@ The pojos for the same Messages is in package https://github.com/mayur-oci/OemTo
 
 The conversion/transformation logic of OEM Metric to OCI Metrics for these messages is in the class OemMetricsToOciMetricsConversion, specifically in method addSingleMetric.
 
-All the config values for consumer and monitoring service are in this file
-https://github.com/mayur-oci/OemToOciMetrics/blob/master/src/main/java/com/oss/oem/ConfigHolder.java. This class is simply holding all these config values.  
+All the config values for consumer and monitoring service are in the well commented Java class file
+https://github.com/mayur-oci/OemToOciMetrics/blob/master/src/main/java/com/oss/oem/ConfigHolder.java. This class is simple static class holding all the config values, that will want to tweak as per his/her environment. 
 
 For more information on Oracle Cloud Service SDK for Oracle Streaming Service and Monitoring Service, please take a look at 
 https://github.com/oracle/oci-java-sdk/tree/master/bmc-streaming and https://github.com/oracle/oci-java-sdk/tree/master/bmc-monitoring respectively.
