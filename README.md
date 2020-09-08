@@ -15,10 +15,9 @@ https://github.com/oracle/oci-java-sdk/tree/master/bmc-streaming and https://git
 
 
 Deployment Instructions: This is simple maven based Java 8 project. For building it you need Java 8 and mvn 3.6+ in the path. 
-From root pom directory, just do 
+From root pom directory, do as follows for compilation 
 
-
-mvn clean install for compilation. 
+mvn clean install . 
 
 After compilation you can use standard Java command as follows for launching it.
 
