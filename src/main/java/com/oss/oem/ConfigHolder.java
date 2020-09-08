@@ -29,7 +29,7 @@ public class ConfigHolder {
     
     
     // Oracle Cloud Monitoring Service Configs
-    static public String monitoringProfileName = "MAYUR_ADMIN_PHX";
+    static public String monitoringProfileName = "MAYUR_ADMIN_PHX";     // profile for Oracle Monitoring service client
     static public String monitoringServiceEndpoint = "https://telemetry-ingestion.us-phoenix-1.oraclecloud.com/"; // endpoint changes as per OCI region
     static public String monitoringCompartmentId = "ocid1.compartment.oc1..aaaaaaaa2z4wup7a4enznwxi3mkk55cperdk3fcotagepjnan5utdb3tvakq";
     static public Region monitoringRegion = Region.US_PHOENIX_1;
